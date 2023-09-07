@@ -9,8 +9,8 @@ export class Contract {
     this.wallet = walletToUse;
   }
 
-  async getBeneficiary() {
-    return await this.wallet.viewMethod({ contractId: this.contractId, method: "get_beneficiary" })
+  async getVault() {
+    return await this.wallet.viewMethod({ contractId: this.contractId, method: "get_vault" })
   }
 
   async latestdeposits() {

@@ -1,6 +1,6 @@
 # Inferix Deposit Contract
 
-The smart contract exposes multiple methods to handle depositing money to a `beneficiary` set on initialization.
+The smart contract exposes multiple methods to handle depositing money to a `vault` set on initialization.
 
 <br />
 
@@ -26,32 +26,32 @@ cat ./neardev/dev-account
 # e.g. dev-1659899566943-21539992274727
 ```
 
-The contract will be automatically initialized with a default `beneficiary`.
+The contract will be automatically initialized with a default `vault`.
 
 To initialize the contract yourself do:
 
 ```bash
 # Use near-cli to initialize contract (optional)
-near call <dev-account> new '{"beneficiary":"<account>"}' --accountId <dev-account>
+near call <dev-account> new '{"vault":"<account>"}' --accountId <dev-account>
 ```
 
 <br />
 
-## 2. Get Beneficiary
+## 2. Get Vault
 
-`beneficiary` is a read-only method (`view` method) that returns the beneficiary of the deposits.
+`vault` is a read-only method (`view` method) that returns the vault of the deposits.
 
 `View` methods can be called for **free** by anyone, even people **without a NEAR account**!
 
 ```bash
-near view <dev-account> beneficiary
+near view <dev-account> vault
 ```
 
 <br />
 
 ## 3. Get Number of deposits
 
-`deposit` forwards any attached money to the `beneficiary` while keeping track of it.
+`deposit` forwards any attached money to the `vault` while keeping track of it.
 
 `deposit` is a payable method for which can only be invoked using a NEAR account. The account needs to attach money and pay GAS for the transaction.
 

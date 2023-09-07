@@ -50,8 +50,8 @@ impl Contract {
             deposited_so_far
         );
 
-        // Send the money to the beneficiary
-        Promise::new(self.beneficiary.clone()).transfer(to_transfer);
+        // Send the money to the vault
+        Promise::new(self.vault.clone()).transfer(to_transfer);
 
         // Return the total amount deposited so far
         U128(deposited_so_far)

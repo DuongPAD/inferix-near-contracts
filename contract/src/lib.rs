@@ -7,14 +7,14 @@ mod deposit;
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Contract {
-    pub beneficiary: AccountId,
+    pub vault: AccountId,
     pub deposits: UnorderedMap<AccountId, u128>,
 }
 
 impl Default for Contract {
     fn default() -> Self {
         Self {
-            beneficiary: "skywalker99.testnet".parse().unwrap(),
+            vault: "skywalker99.testnet".parse().unwrap(),
             deposits: UnorderedMap::new(b"d"),
         }
     }
@@ -24,27 +24,27 @@ impl Default for Contract {
 impl Contract {
     #[init]
     #[private] // Public - but only callable by env::current_account_id()
-    pub fn init(beneficiary: AccountId) -> Self {
+    pub fn init(vault: AccountId) -> Self {
         Self {
-            beneficiary,
+            vault,
             deposits: UnorderedMap::new(b"d"),
         }
     }
 
-    // Public - beneficiary getter
-    pub fn get_beneficiary(&self) -> AccountId {
-        self.beneficiary.clone()
+    // Public - vault getter
+    pub fn get_vault(&self) -> AccountId {
+        self.vault.clone()
     }
 
-    // Public - beneficiary getter
+    // Public - vault getter
     pub fn get_all_deposits(&self) -> Vec<(AccountId, u128)> {
         self.deposits.iter().collect()
     }
 
-    // Public - but only callable by env::current_account_id(). Sets the beneficiary
+    // Public - but only callable by env::current_account_id(). Sets the vault
     #[private]
-    pub fn change_beneficiary(&mut self, beneficiary: AccountId) {
-        self.beneficiary = beneficiary;
+    pub fn change_vault(&mut self, vault: AccountId) {
+        self.vault = vault;
     }
 }
 
@@ -55,18 +55,18 @@ mod tests {
     use near_sdk::testing_env;
     use near_sdk::Balance;
 
-    const BENEFICIARY: &str = "beneficiary";
+    const VAULT: &str = "vault";
     const NEAR: u128 = 1000000000000000000000000;
 
     #[test]
     fn initializes() {
-        let contract = Contract::init(BENEFICIARY.parse().unwrap());
-        assert_eq!(contract.beneficiary, BENEFICIARY.parse().unwrap())
+        let contract = Contract::init(VAULT.parse().unwrap());
+        assert_eq!(contract.vault, VAULT.parse().unwrap())
     }
 
     #[test]
     fn deposit() {
-        let mut contract = Contract::init(BENEFICIARY.parse().unwrap());
+        let mut contract = Contract::init(VAULT.parse().unwrap());
 
         // Make a deposit
         set_context("user_a", 1 * NEAR);

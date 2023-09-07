@@ -31,7 +31,6 @@ node_modules
 **/neardev
 **/.parcel-cache
 **/dist
-/intergration-tests
 
 npm-debug.log*
 yarn-debug.log*

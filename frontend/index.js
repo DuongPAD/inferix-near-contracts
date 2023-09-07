@@ -19,7 +19,7 @@ window.onload = async () => {
     signedOutFlow()
   }
 
-  fetchBeneficiary()
+  fetchVault()
   getAndShowdeposits()
 }
 
@@ -51,12 +51,12 @@ document.querySelector('form').onsubmit = async (event) => {
 document.querySelector('#sign-in-button').onclick = () => { wallet.signIn() }
 document.querySelector('#sign-out-button').onclick = () => { wallet.signOut() }
 
-async function fetchBeneficiary() {
+async function fetchVault() {
   // Get greeting from the contract
-  const currentGreeting = await contract.getBeneficiary()
+  const currentGreeting = await contract.getVault()
 
   // Set all elements marked as greeting with the current greeting
-  document.querySelectorAll('[data-behavior=beneficiary]').forEach(el => {
+  document.querySelectorAll('[data-behavior=vault]').forEach(el => {
     el.innerText = currentGreeting
     el.value = currentGreeting
   })
