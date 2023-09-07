@@ -19,6 +19,17 @@ impl Contract {
         self.governance.clone()
     }
 
+    pub fn add_to_blacklist(&mut self, account_id: &AccountId) {
+        self.assert_governance();
+        self.black_list.insert(account_id, &BlackListStatus::Banned);
+    }
+
+    pub fn remove_from_blacklist(&mut self, account_id: &AccountId) {
+        self.assert_governance();
+        self.black_list
+            .insert(account_id, &BlackListStatus::Allowable);
+    }
+
     /// Pauses the contract. Only can be called by owner or guardians.
     #[payable]
     pub fn pause(&mut self) {

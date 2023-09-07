@@ -1,10 +1,19 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::UnorderedMap;
+use near_sdk::collections::{LookupMap, UnorderedMap};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, near_bindgen, AccountId};
 
 mod deposit;
 mod governance;
+
+#[derive(BorshDeserialize, BorshSerialize, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub enum BlackListStatus {
+    // An address might be using
+    Allowable,
+    // All acts with an address have to be banned
+    Banned,
+}
 
 #[derive(BorshDeserialize, BorshSerialize, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -26,6 +35,7 @@ impl std::fmt::Display for ContractStatus {
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Contract {
     vault: AccountId,
+    black_list: LookupMap<AccountId, BlackListStatus>,
     deposits: UnorderedMap<AccountId, u128>,
     status: ContractStatus,
     governance: AccountId,
@@ -35,6 +45,7 @@ impl Default for Contract {
     fn default() -> Self {
         Self {
             vault: "skywalker99.testnet".parse().unwrap(),
+            black_list: LookupMap::new(b"b"),
             deposits: UnorderedMap::new(b"d"),
             status: ContractStatus::Working,
             governance: "skywalker99.testnet".parse().unwrap(),
@@ -49,6 +60,7 @@ impl Contract {
     pub fn init(governance: AccountId) -> Self {
         Self {
             vault: governance.clone(),
+            black_list: LookupMap::new(b"b"),
             deposits: UnorderedMap::new(b"d"),
             status: ContractStatus::Working,
             governance,
@@ -60,9 +72,22 @@ impl Contract {
         self.status.clone()
     }
 
+    pub fn blacklist_status(&self, account_id: &AccountId) -> BlackListStatus {
+        return match self.black_list.get(account_id) {
+            Some(x) => x.clone(),
+            None => BlackListStatus::Allowable,
+        };
+    }
+
     fn abort_if_pause(&self) {
         if self.status == ContractStatus::Paused {
             env::panic_str("The contract is under maintenance")
+        }
+    }
+
+    fn abort_if_blacklisted(&self, account_id: AccountId) {
+        if self.blacklist_status(&account_id) != BlackListStatus::Allowable {
+            env::panic_str(&format!("Account '{}' is banned", account_id));
         }
     }
 
