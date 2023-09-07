@@ -22,6 +22,7 @@ impl Contract {
         // Get who is calling the method and how much $NEAR they attached
         let attached_deposit: Balance = env::attached_deposit();
         let sender: AccountId = env::predecessor_account_id();
+        self.abort_if_pause();
 
         let mut deposited_so_far = self.deposits.get(&sender).unwrap_or(0);
 

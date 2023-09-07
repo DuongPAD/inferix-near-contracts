@@ -1,14 +1,34 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::UnorderedMap;
-use near_sdk::{near_bindgen, AccountId};
+use near_sdk::serde::{Deserialize, Serialize};
+use near_sdk::{env, near_bindgen, AccountId};
 
 mod deposit;
+mod governance;
+
+#[derive(BorshDeserialize, BorshSerialize, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub enum ContractStatus {
+    Working,
+    Paused,
+}
+
+impl std::fmt::Display for ContractStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ContractStatus::Working => write!(f, "working"),
+            ContractStatus::Paused => write!(f, "paused"),
+        }
+    }
+}
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Contract {
-    pub vault: AccountId,
-    pub deposits: UnorderedMap<AccountId, u128>,
+    vault: AccountId,
+    deposits: UnorderedMap<AccountId, u128>,
+    status: ContractStatus,
+    governance: AccountId,
 }
 
 impl Default for Contract {
@@ -16,6 +36,8 @@ impl Default for Contract {
         Self {
             vault: "skywalker99.testnet".parse().unwrap(),
             deposits: UnorderedMap::new(b"d"),
+            status: ContractStatus::Working,
+            governance: "skywalker99.testnet".parse().unwrap(),
         }
     }
 }
@@ -24,10 +46,23 @@ impl Default for Contract {
 impl Contract {
     #[init]
     #[private] // Public - but only callable by env::current_account_id()
-    pub fn init(vault: AccountId) -> Self {
+    pub fn init(governance: AccountId) -> Self {
         Self {
-            vault,
+            vault: governance.clone(),
             deposits: UnorderedMap::new(b"d"),
+            status: ContractStatus::Working,
+            governance,
+        }
+    }
+
+    // Public - contract status getter
+    pub fn contract_status(&self) -> ContractStatus {
+        self.status.clone()
+    }
+
+    fn abort_if_pause(&self) {
+        if self.status == ContractStatus::Paused {
+            env::panic_str("The contract is under maintenance")
         }
     }
 

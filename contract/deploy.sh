@@ -4,4 +4,4 @@
 
 echo ">> Deploying contract"
 
-near dev-deploy --wasmFile ./target/wasm32-unknown-unknown/release/inferix-deposit-contract.wasm
+near dev-deploy --wasmFile ./target/wasm32-unknown-unknown/release/contract.wasm
