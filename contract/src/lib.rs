@@ -3,8 +3,10 @@ use near_sdk::collections::{LookupMap, UnorderedMap};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, near_bindgen, AccountId};
 
+mod account_info;
 mod deposit;
 mod governance;
+use crate::account_info::AccountInfo;
 
 #[derive(BorshDeserialize, BorshSerialize, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -36,9 +38,10 @@ impl std::fmt::Display for ContractStatus {
 pub struct Contract {
     vault: AccountId,
     black_list: LookupMap<AccountId, BlackListStatus>,
-    deposits: UnorderedMap<AccountId, u128>,
+    deposits: UnorderedMap<AccountId, AccountInfo>,
     status: ContractStatus,
     governance: AccountId,
+    withdraw_allowance_time: u64,
 }
 
 impl Default for Contract {
@@ -49,6 +52,7 @@ impl Default for Contract {
             deposits: UnorderedMap::new(b"d"),
             status: ContractStatus::Working,
             governance: "skywalker99.testnet".parse().unwrap(),
+            withdraw_allowance_time: 300,
         }
     }
 }
@@ -64,6 +68,7 @@ impl Contract {
             deposits: UnorderedMap::new(b"d"),
             status: ContractStatus::Working,
             governance,
+            withdraw_allowance_time: 300,
         }
     }
 
@@ -85,6 +90,19 @@ impl Contract {
         }
     }
 
+    fn abort_if_not_governance(&self) {
+        let sender: AccountId = env::predecessor_account_id();
+        if self.governance != sender {
+            env::panic_str("Only governance")
+        }
+    }
+    fn abort_if_not_in_withdraw_time(&self, user_info: &AccountInfo) {
+        let now_sec = env::block_timestamp();
+        if user_info.start_at > now_sec || user_info.end_at < now_sec {
+            env::panic_str("Not in withdraw time")
+        }
+    }
+
     fn abort_if_blacklisted(&self, account_id: AccountId) {
         if self.blacklist_status(&account_id) != BlackListStatus::Allowable {
             env::panic_str(&format!("Account '{}' is banned", account_id));
@@ -95,16 +113,25 @@ impl Contract {
     pub fn get_vault(&self) -> AccountId {
         self.vault.clone()
     }
+    // Public - withdraw_allowance_time
+    pub fn get_allowance_time(&self) -> u64 {
+        self.withdraw_allowance_time.clone()
+    }
 
     // Public - vault getter
-    pub fn get_all_deposits(&self) -> Vec<(AccountId, u128)> {
+    pub fn get_all_deposits(&self) -> Vec<(AccountId, AccountInfo)> {
         self.deposits.iter().collect()
     }
 
     // Public - but only callable by env::current_account_id(). Sets the vault
     #[private]
     pub fn change_vault(&mut self, vault: AccountId) {
+        self.abort_if_not_governance();
         self.vault = vault;
+    }
+    pub fn change_allowance_time(&mut self, time: u64) {
+        self.abort_if_not_governance();
+        self.withdraw_allowance_time = time;
     }
 }
 
