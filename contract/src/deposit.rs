@@ -140,12 +140,12 @@ impl Contract {
             .collect()
     }
 
-    pub fn set_user_spent(&mut self, amount: Balance) {
+    pub fn set_user_spent(&mut self, account_id: AccountId, amount: Balance) {
         let sender: AccountId = env::predecessor_account_id();
         self.abort_if_not_governance();
         self.abort_if_pause();
 
-        let mut user_info = self.deposits.get(&sender).unwrap_or_default();
+        let mut user_info = self.deposits.get(&account_id.clone()).unwrap_or_default();
         assert!(user_info.deposited > amount, "Spent too much");
         user_info.set_spent(amount);
         let now_sec = env::block_timestamp();
