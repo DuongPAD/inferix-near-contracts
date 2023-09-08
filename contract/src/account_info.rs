@@ -1,11 +1,10 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{AccountId, Balance};
+use near_sdk::Balance;
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone)]
 #[serde(crate = "near_sdk::serde")]
 pub struct AccountInfo {
-    pub user: AccountId,
     pub deposited: Balance,
     pub spent: Balance,
     pub remained: Balance,
@@ -15,7 +14,6 @@ pub struct AccountInfo {
 impl Default for AccountInfo {
     fn default() -> AccountInfo {
         AccountInfo {
-            user: "skywalker99.testnet".parse().unwrap(),
             deposited: 0,
             spent: 0,
             remained: 0,
@@ -47,12 +45,12 @@ impl AccountInfo {
         self.start_at = start;
         self.end_at = end;
     }
-    pub(crate) fn get_deposited(&mut self) -> Balance {
-        self.deposited
-    }
-    pub(crate) fn get_spent(&mut self) -> Balance {
-        self.spent
-    }
+    // pub(crate) fn get_deposited(&mut self) -> Balance {
+    //     self.deposited
+    // }
+    // pub(crate) fn get_spent(&mut self) -> Balance {
+    //     self.spent
+    // }
     pub(crate) fn get_remained(&mut self) -> Balance {
         self.remained
     }

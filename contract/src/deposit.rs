@@ -8,6 +8,7 @@ use near_sdk::json_types::U128;
 use near_sdk::serde::Serialize;
 use near_sdk::{env, log, near_bindgen, AccountId, Balance, Promise};
 pub const STORAGE_COST: u128 = 1_000_000_000_000_000_000_000;
+pub const DECIMALS_POW: u128 = 1_000_000_000_000;
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -98,12 +99,14 @@ impl Contract {
 
         let mut user_info = self.deposits.get(&sender).unwrap_or_default();
         self.abort_if_not_in_withdraw_time(&user_info);
-        let amount_remained = user_info.get_remained();
+        // let amount_remained = user_info.get_remained();
 
-        assert!(user_info.get_remained() > amount, "Withdraw too much");
+        let real_amount = amount * DECIMALS_POW;
 
-        Promise::new(sender.clone()).transfer(amount_remained);
-        user_info.withdraw(amount);
+        assert!(user_info.get_remained() > real_amount, "Withdraw too much");
+
+        Promise::new(sender.clone()).transfer(real_amount);
+        user_info.withdraw(real_amount);
 
         self.deposits.insert(&sender, &user_info);
 
@@ -119,7 +122,7 @@ impl Contract {
     }
 
     // Public - get total number of users
-    pub fn number_of_users(&self) -> u64 {
+    pub fn get_number_of_users(&self) -> u64 {
         self.deposits.len()
     }
 
@@ -140,30 +143,36 @@ impl Contract {
             .collect()
     }
 
+    // Private - Governance set spent for account
+    #[payable]
     pub fn set_user_spent(&mut self, account_id: AccountId, amount: Balance) {
-        let sender: AccountId = env::predecessor_account_id();
+        assert_one_yocto();
         self.abort_if_not_governance();
         self.abort_if_pause();
+        let real_amount = amount * DECIMALS_POW;
 
         let mut user_info = self.deposits.get(&account_id.clone()).unwrap_or_default();
-        assert!(user_info.deposited > amount, "Spent too much");
-        user_info.set_spent(amount);
-        let now_sec = env::block_timestamp();
+        assert!(user_info.deposited > real_amount, "Spent too much");
+        user_info.set_spent(real_amount);
+        let now_sec = env::block_timestamp_ms() / 1000;
         user_info.set_time(now_sec, now_sec + self.get_allowance_time());
-        self.deposits.insert(&sender, &user_info);
+        self.deposits.insert(&account_id.clone(), &user_info);
     }
-    pub fn get_user_spent(&mut self) -> u128 {
-        let sender: AccountId = env::predecessor_account_id();
+
+    pub fn get_user_spent(&mut self, account_id: AccountId) -> AccountInfo {
+        let sender: AccountId = account_id.clone();
+        let user_info = self.deposits.get(&sender).unwrap_or_default();
+        user_info
+    }
+
+    pub fn get_user_remained(&mut self, account_id: AccountId) -> U128 {
+        let sender: AccountId = account_id.clone();
         let mut user_info = self.deposits.get(&sender).unwrap_or_default();
-        user_info.get_spent()
+        U128(user_info.get_remained())
     }
-    pub fn get_user_remained(&mut self) -> u128 {
-        let sender: AccountId = env::predecessor_account_id();
-        let mut user_info = self.deposits.get(&sender).unwrap_or_default();
-        user_info.get_remained()
-    }
-    pub fn get_user_withdraw_time(&mut self) -> (u64, u64) {
-        let sender: AccountId = env::predecessor_account_id();
+
+    pub fn get_user_withdraw_time(&mut self, account_id: AccountId) -> (u64, u64) {
+        let sender: AccountId = account_id.clone();
         let mut user_info = self.deposits.get(&sender).unwrap_or_default();
         user_info.get_withdraw_time()
     }

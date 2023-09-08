@@ -7,6 +7,7 @@ mod account_info;
 mod deposit;
 mod governance;
 use crate::account_info::AccountInfo;
+pub const ADD_ALLOWANCE_TIME: u64 = 180;
 
 #[derive(BorshDeserialize, BorshSerialize, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -52,7 +53,7 @@ impl Default for Contract {
             deposits: UnorderedMap::new(b"d"),
             status: ContractStatus::Working,
             governance: "skywalker99.testnet".parse().unwrap(),
-            withdraw_allowance_time: 300,
+            withdraw_allowance_time: ADD_ALLOWANCE_TIME,
         }
     }
 }
@@ -68,7 +69,7 @@ impl Contract {
             deposits: UnorderedMap::new(b"d"),
             status: ContractStatus::Working,
             governance,
-            withdraw_allowance_time: 300,
+            withdraw_allowance_time: ADD_ALLOWANCE_TIME,
         }
     }
 
@@ -96,8 +97,9 @@ impl Contract {
             env::panic_str("Only governance")
         }
     }
+
     fn abort_if_not_in_withdraw_time(&self, user_info: &AccountInfo) {
-        let now_sec = env::block_timestamp();
+        let now_sec = env::block_timestamp_ms() / 1000;
         if user_info.start_at > now_sec || user_info.end_at < now_sec {
             env::panic_str("Not in withdraw time")
         }
@@ -113,6 +115,7 @@ impl Contract {
     pub fn get_vault(&self) -> AccountId {
         self.vault.clone()
     }
+
     // Public - withdraw_allowance_time
     pub fn get_allowance_time(&self) -> u64 {
         self.withdraw_allowance_time.clone()
@@ -179,7 +182,7 @@ mod tests {
         // Check the deposit was recorded correctly
         assert_eq!(first_deposit.total_amount.0, 1 * NEAR * 2);
 
-        assert_eq!(contract.number_of_users(), 2);
+        assert_eq!(contract.get_number_of_users(), 2);
     }
 
     // Auxiliar fn: create a mock context
