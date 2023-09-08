@@ -18,6 +18,9 @@ near call inferix.testnet deposit '{}' --accountId jackybook2.testnet --amount 6
 # echo ">> Get deposited amount for account_id"
 # near call inferix.testnet get_deposit_for_account '{"account_id": "jackybook2.testnet"}' --accountId jackybook.testnet
 
+# echo ">> Get info for account_id"
+# near view inferix.testnet get_info_for_account '{"account_id": "jackybook2.testnet"}' --accountId jackybook.testnet
+
 # echo ">> Get total number of users"
 # near view inferix.testnet get_number_of_users '{}'
 
@@ -26,9 +29,6 @@ near call inferix.testnet deposit '{}' --accountId jackybook2.testnet --amount 6
 
 # echo ">> Set spent for user"
 # near call inferix.testnet set_user_spent '{"account_id": "jackybook2.testnet", "amount": 10000000000000}' --accountId inferix.testnet --amount 0.000000000000000000000001
-
-# echo ">> Get spent for user"
-# near call inferix.testnet get_user_spent '{"account_id": "jackybook2.testnet"}' --accountId jackybook.testnet
 
 # echo ">> withdraw_all"
 # near call inferix.testnet withdraw_all '{}' --accountId jackybook2.testnet --amount 0.000000000000000000000001

@@ -54,7 +54,7 @@ impl AccountInfo {
     pub(crate) fn get_remained(&mut self) -> Balance {
         self.remained
     }
-    pub(crate) fn get_withdraw_time(&mut self) -> (u64, u64) {
-        (self.start_at, self.end_at)
-    }
+    // pub(crate) fn get_withdraw_time(&mut self) -> (u64, u64) {
+    //     (self.start_at, self.end_at)
+    // }
 }

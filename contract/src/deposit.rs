@@ -99,7 +99,6 @@ impl Contract {
 
         let mut user_info = self.deposits.get(&sender).unwrap_or_default();
         self.abort_if_not_in_withdraw_time(&user_info);
-        // let amount_remained = user_info.get_remained();
 
         let real_amount = amount * DECIMALS_POW;
 
@@ -113,11 +112,23 @@ impl Contract {
         log!("Thank you {} for withdrawing {}! ", sender.clone(), amount,);
     }
 
-    // Public - get deposit by account ID
+    // Public - get deposit for account ID
     pub fn get_deposit_for_account(&self, account_id: AccountId) -> Deposit {
         Deposit {
             account_id: account_id.clone(),
             total_amount: U128(self.deposits.get(&account_id).unwrap_or_default().deposited),
+        }
+    }
+
+    // Public - get info by account ID
+    pub fn get_info_for_account(&self, account_id: AccountId) -> AccountInfo {
+        let deposit_by_id = self.deposits.get(&account_id).unwrap_or_default();
+        AccountInfo {
+            deposited: deposit_by_id.clone().deposited,
+            spent: deposit_by_id.clone().spent,
+            remained: deposit_by_id.clone().remained,
+            start_at: deposit_by_id.clone().start_at,
+            end_at: deposit_by_id.clone().end_at,
         }
     }
 
@@ -157,23 +168,5 @@ impl Contract {
         let now_sec = env::block_timestamp_ms() / 1000;
         user_info.set_time(now_sec, now_sec + self.get_allowance_time());
         self.deposits.insert(&account_id.clone(), &user_info);
-    }
-
-    pub fn get_user_spent(&mut self, account_id: AccountId) -> AccountInfo {
-        let sender: AccountId = account_id.clone();
-        let user_info = self.deposits.get(&sender).unwrap_or_default();
-        user_info
-    }
-
-    pub fn get_user_remained(&mut self, account_id: AccountId) -> U128 {
-        let sender: AccountId = account_id.clone();
-        let mut user_info = self.deposits.get(&sender).unwrap_or_default();
-        U128(user_info.get_remained())
-    }
-
-    pub fn get_user_withdraw_time(&mut self, account_id: AccountId) -> (u64, u64) {
-        let sender: AccountId = account_id.clone();
-        let mut user_info = self.deposits.get(&sender).unwrap_or_default();
-        user_info.get_withdraw_time()
     }
 }
