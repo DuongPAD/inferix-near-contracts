@@ -28,7 +28,7 @@ impl Contract {
         self.abort_if_pause();
         self.abort_if_blacklisted(sender.clone());
 
-        if attached_deposit <= MIN_DEPOSIT_COST {
+        if attached_deposit < MIN_DEPOSIT_COST {
             env::panic_str("The attached deposit must be at least 5 NEAR");
         }
 
@@ -36,13 +36,6 @@ impl Contract {
         let mut deposited_so_far = self.deposits.get(&sender).unwrap_or_default();
 
         let to_transfer: Balance = if deposited_so_far.deposited == 0 {
-            // This is the user's first deposit, lets register it, which increases storage
-            assert!(
-                attached_deposit > STORAGE_COST,
-                "Attach at least {} yoctoNEAR",
-                STORAGE_COST
-            );
-
             // Subtract the storage cost to the amount to transfer
             attached_deposit - STORAGE_COST
         } else {
