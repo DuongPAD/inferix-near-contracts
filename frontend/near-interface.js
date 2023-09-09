@@ -14,7 +14,7 @@ export class Contract {
   }
 
   async latestdeposits() {
-    const number_of_donors = await this.wallet.viewMethod({ contractId: this.contractId, method: "number_of_users" })
+    const number_of_donors = await this.wallet.viewMethod({ contractId: this.contractId, method: "get_number_of_users" })
     const min = number_of_donors > 10 ? number_of_donors - 9 : 0
 
     let deposits = await this.wallet.viewMethod({ contractId: this.contractId, method: "get_deposits", args: { from_index: min.toString(), limit: number_of_donors } })
