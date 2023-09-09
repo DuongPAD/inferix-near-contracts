@@ -4,10 +4,14 @@ import { Wallet } from './near-wallet'
 
 // When creating the wallet you can choose to create an access key, so the user
 // can skip signing non-payable methods when interacting with the contract
-const wallet = new Wallet({ createAccessKeyFor: process.env.CONTRACT_NAME })
+// const wallet = new Wallet({ createAccessKeyFor: process.env.CONTRACT_NAME })
+const wallet = new Wallet({ createAccessKeyFor: 'inferix.testnet' })
+
 
 // Abstract the logic of interacting with the contract to simplify your project
-const contract = new Contract({ contractId: process.env.CONTRACT_NAME, walletToUse: wallet });
+// const contract = new Contract({ contractId: process.env.CONTRACT_NAME, walletToUse: wallet });
+const contract = new Contract({ contractId: 'inferix.testnet', walletToUse: wallet });
+
 
 // Setup on page load
 window.onload = async () => {
