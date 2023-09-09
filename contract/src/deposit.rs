@@ -9,6 +9,7 @@ use near_sdk::serde::Serialize;
 use near_sdk::{env, log, near_bindgen, AccountId, Balance, Promise};
 pub const STORAGE_COST: u128 = 1_000_000_000_000_000_000_000;
 pub const DECIMALS_POW: u128 = 1_000_000_000_000;
+pub const MIN_DEPOSIT_COST: u128 = 5_000_000_000_000_000_000_000_000;
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -26,6 +27,10 @@ impl Contract {
         let sender: AccountId = env::predecessor_account_id();
         self.abort_if_pause();
         self.abort_if_blacklisted(sender.clone());
+
+        if attached_deposit <= MIN_DEPOSIT_COST {
+            env::panic_str("The attached deposit must be at least 5 NEAR");
+        }
 
         // let mut deposited_so_far = self.deposits.get(&sender).unwrap_or(0);
         let mut deposited_so_far = self.deposits.get(&sender).unwrap_or_default();
